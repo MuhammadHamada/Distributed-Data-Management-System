@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 
 public class tabletServer2 {
 
-    private static ExecutorService threadPool = Executors.newFixedThreadPool(10);
+    private static ExecutorService threadPool = Executors.newFixedThreadPool(2);
     private static ServerSocket serverSocket;
 
     public static String myIp = "localhost";

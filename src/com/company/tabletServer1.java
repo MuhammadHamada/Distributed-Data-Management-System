@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 
 public class tabletServer1 {
 
-    private static ExecutorService threadPool = Executors.newFixedThreadPool(10);
+    private static ExecutorService threadPool = Executors.newFixedThreadPool(2);
     private static ServerSocket serverSocket;
     private static double lstMagInTablet1;
 

@@ -13,11 +13,11 @@ public class client2 {
 
         try {
             Socket socket = new Socket("localhost",4000);
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
 
             while (true) {
+
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
                 System.out.println("PLease Choose from the following options : ");
                 System.out.println("[1] --> Set Row");
@@ -112,6 +112,7 @@ public class client2 {
                 res = tabletServerIn.readLine();
 
                 System.out.println(res);
+                tabletServerSocket.close();
 
 
 
