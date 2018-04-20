@@ -12,9 +12,9 @@ import java.util.HashMap;
 public class requestMasterMan implements Runnable {
 
     private final Socket clientSocket;
-    public static HashMap<Pair<Integer,Integer>,String> metaData = new HashMap<>();
+    public static HashMap<Pair<Double,Double>,String> metaData = new HashMap<>();
 
-    public requestMasterMan(Socket clientSocket, HashMap<Pair<Integer,Integer>,String> mD) {
+    public requestMasterMan(Socket clientSocket, HashMap<Pair<Double,Double>,String> mD) {
         this.clientSocket = clientSocket;
         this.metaData = mD;
     }
@@ -26,7 +26,7 @@ public class requestMasterMan implements Runnable {
             try {
 
 
-                System.out.println("socket : " + clientSocket);
+               // System.out.println("socket : " + clientSocket);
 
 
                 BufferedReader in = new BufferedReader(
@@ -38,10 +38,10 @@ public class requestMasterMan implements Runnable {
                 //String msg = "s!usc000mqnr!4.0!44km NW of Naisano Dua, Indonesia!2014-01-01!0";
                 String[] arr = msg.split("!");
 
-                int key = Integer.parseInt(arr[1]);
+                double key = Double.parseDouble(arr[1]);
                 String tabletServer = "";
 
-                for (Pair<Integer, Integer> k : metaData.keySet()) {
+                for (Pair<Double, Double> k : metaData.keySet()) {
                     System.out.println("key : " + key);
                     System.out.println("k : " + k);
                     System.out.println("k.getKey() : " + k.getKey());

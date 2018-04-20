@@ -18,13 +18,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static java.util.Comparator.comparingDouble;
+
 
 public class Main {
 
-    private static ExecutorService threadPool = Executors.newFixedThreadPool(2);
+    private static ExecutorService threadPool = Executors.newFixedThreadPool(10);
     private static ServerSocket serverSocket;
 
-    public static HashMap<Pair<Integer,Integer>,String> metaData = new HashMap<>();
+    private static HashMap<Pair<Double,Double>,String> metaData = new HashMap<>();
+    public static ArrayList<Quak> allQuakes = new ArrayList<>();
     private static String readAll(Reader rd) throws IOException {
         StringBuilder sb = new StringBuilder();
         int cp;
@@ -52,9 +55,9 @@ public class Main {
 
     public static void main(String[] args) throws IOException, JSONException {
 
-        //initMaster();
-        metaData.put(new Pair(1,662),"tablet_server1");
-        metaData.put(new Pair(663,992),"tablet_server2");
+       // initMaster();
+        metaData.put(new Pair(-10.0,1.6),"tablet_server1");
+        metaData.put(new Pair(1.61,10.0),"tablet_server2");
 
         try {
             serverSocket = new ServerSocket(4000);
@@ -81,11 +84,10 @@ public class Main {
 
         Connection MasterConn = getConnection("master");
 
-        JSONObject jsonObject = readJsonFromUrl("https://earthquake.usgs.gov/fdsnws/event/1/" +
-                "query?format=geojson&starttime=2014-01-01&endtime=2014-02-02&limit=1000");
+        JSONObject jsonObject = readJsonFromUrl("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&limit=54");
         JSONArray jsonArray = jsonObject.getJSONArray("features");
 
-        ArrayList<Quak> allQuakes = new ArrayList<>();
+
 
         String id,place,title;
         long time;
@@ -111,7 +113,16 @@ public class Main {
             try {
                 JSONObject jsonProperties = jsonQuak.getJSONObject("properties");
                 place = jsonProperties.getString("place");
-                place = "'" + place + "'";
+
+                String[] placeArr = place.split(",");
+                place = "'" + placeArr[placeArr.length-1] + "'";
+                String tmp = "";
+                for (int j = 0; j < place.length(); j++){
+                    if(place.charAt(j) != ' '){
+                        tmp += place.charAt(j);
+                    }
+                }
+                place = tmp;
                 mag = jsonProperties.getDouble("mag");
                 tsunami = jsonProperties.getInt("tsunami");
 
@@ -123,16 +134,13 @@ public class Main {
                 int mMonth = calendar.get(Calendar.MONTH);
                 int mDay = calendar.get(Calendar.DAY_OF_MONTH);
 
-                String date = "'" + mYear + "-" + mMonth + "-" + mDay + "'";
-
                 title = jsonProperties.getString("title");
                 title = "'" + title + "'";
 
-                Quak quak = new Quak(id,place,title,date,mag,tsunami,longitude,latitude,depth);
+                Quak quak = new Quak(id,place,title,mDay,mMonth,mYear,mag,tsunami,longitude,latitude,depth);
                 allQuakes.add(quak);
 
-                String query = "insert into EarthQuakes (mag,place,earthQuakDate,Tsunami,longitude,latitude,depth,title) values ("
-                       + mag + "," + place + "," + date + "," + tsunami + "," + longitude + "," + latitude + "," + depth + "," + title  + ");";
+                String query = generateInsertQuery("earthquakes",i);
                 System.out.println(query);
                 Statement mystm = null;
 
@@ -149,20 +157,15 @@ public class Main {
 
         }
 
-        //Collections.sort(allQuakes, comparingDouble(q -> q.mag));
+        Collections.sort(allQuakes, comparingDouble(q -> q.mag));
 
-        Collections.sort(allQuakes,new Comparator<Quak>() {
-            @Override
-            public int compare(Quak q1, Quak q2) {
-                return q1.id.compareToIgnoreCase(q2.id);
-            }
-        });
+
 
         int ln = allQuakes.size()/3;
 
-        metaData.put(new Pair(-100,allQuakes.get(2*ln-1).id),"tablet_server1");
+        metaData.put(new Pair(-100,allQuakes.get(2*ln-1).mag),"tablet_server1");
+        metaData.put(new Pair(allQuakes.get(2*ln).mag,allQuakes.get(allQuakes.size()-1).mag),"tablet_server2");
 
-        metaData.put(new Pair(allQuakes.get(2*ln).id,allQuakes.get(allQuakes.size()-1).id),"tablet_server2");
         Connection tabletServer1Conn = getConnection("tablet_server1");
         Connection tabletServer2Conn = getConnection("tablet_server2");
 
@@ -172,77 +175,40 @@ public class Main {
 
 
 
-            if(i < ln){
+            if(i < ln || allQuakes.get(i).mag == allQuakes.get(ln-1).mag){
 
-                String query = "insert into earthquakes_1 (mag,place,earthQuakDate,Tsunami,longitude,latitude,depth,title) values ("
-                        + allQuakes.get(i).mag + "," + allQuakes.get(i).place + ","
-                        + allQuakes.get(i).date + "," + allQuakes.get(i).tsunami + ","
-                        + allQuakes.get(i).longitude + "," + allQuakes.get(i).latitude+ ","
-                        + allQuakes.get(i).depth + "," + allQuakes.get(i).title  + ");";
 
+                String query = generateInsertQuery("earthquakes_1",i);
+                System.out.println(query);
                 try {
                     mystm = tabletServer1Conn.createStatement();
                     mystm.executeUpdate(query);
                 } catch (SQLException e) {
-                    System.out.println(query);
-                    System.out.println(allQuakes.get(i).mag);
-                    System.out.println(allQuakes.get(i).place);
-                    System.out.println(allQuakes.get(i).date);
-                    System.out.println(allQuakes.get(i).tsunami);
-                    System.out.println(allQuakes.get(i).longitude);
-                    System.out.println(allQuakes.get(i).latitude);
-                    System.out.println(allQuakes.get(i).depth);
-                    System.out.println(allQuakes.get(i).title);
                     e.printStackTrace();
                 }
 
 
-            }else if(i < ln*2){
+            }else if(i < ln*2 || allQuakes.get(i).mag == allQuakes.get(2*ln-1).mag){
 
-                String query = "insert into earthquakes_2 (mag,place,earthQuakDate,Tsunami,longitude,latitude,depth,title) values ("
-                        + allQuakes.get(i).mag + "," + allQuakes.get(i).place + ","
-                        + allQuakes.get(i).date + "," + allQuakes.get(i).tsunami + ","
-                        + allQuakes.get(i).longitude + "," + allQuakes.get(i).latitude+ ","
-                        + allQuakes.get(i).depth + "," + allQuakes.get(i).title  + ");";
-
+                String query = generateInsertQuery("earthquakes_2",i);
+                System.out.println(query);
 
                 try {
                     mystm = tabletServer1Conn.createStatement();
                     mystm.executeUpdate(query);
                 } catch (SQLException e) {
-                    System.out.println(query);
-                    System.out.println(allQuakes.get(i).mag);
-                    System.out.println(allQuakes.get(i).place);
-                    System.out.println(allQuakes.get(i).date);
-                    System.out.println(allQuakes.get(i).tsunami);
-                    System.out.println(allQuakes.get(i).longitude);
-                    System.out.println(allQuakes.get(i).latitude);
-                    System.out.println(allQuakes.get(i).depth);
-                    System.out.println(allQuakes.get(i).title);
                     e.printStackTrace();
                 }
 
             }else{
 
-                String query = "insert into earthquakes_3 (mag,place,earthQuakDate,Tsunami,longitude,latitude,depth,title) values ("
-                        + allQuakes.get(i).mag + "," + allQuakes.get(i).place + ","
-                        + allQuakes.get(i).date + "," + allQuakes.get(i).tsunami + ","
-                        + allQuakes.get(i).longitude + "," + allQuakes.get(i).latitude+ ","
-                        + allQuakes.get(i).depth + "," + allQuakes.get(i).title  + ");";
+                String query = generateInsertQuery("earthquakes_3",i);
+                System.out.println(query);
 
                 try {
                     mystm = tabletServer2Conn.createStatement();
                     mystm.executeUpdate(query);
                 } catch (SQLException e) {
-                    System.out.println(query);
-                    System.out.println(allQuakes.get(i).mag);
-                    System.out.println(allQuakes.get(i).place);
-                    System.out.println(allQuakes.get(i).date);
-                    System.out.println(allQuakes.get(i).tsunami);
-                    System.out.println(allQuakes.get(i).longitude);
-                    System.out.println(allQuakes.get(i).latitude);
-                    System.out.println(allQuakes.get(i).depth);
-                    System.out.println(allQuakes.get(i).title);
                     e.printStackTrace();
                 }
 
@@ -252,7 +218,7 @@ public class Main {
 
     }
 
-    public static Connection getConnection(String databaseName){
+    private static Connection getConnection(String databaseName){
         Connection conn = null;
         try {
 
@@ -270,5 +236,17 @@ public class Main {
             ex.printStackTrace();
         }
         return conn;
+    }
+
+    public static String generateInsertQuery(String tableName,int idx) {
+
+        String query = "insert into " +  tableName +  "(mag,place,dayy,monthh,yearr,Tsunami,longitude,latitude,depth,title) values ("
+                + allQuakes.get(idx).mag + "," + allQuakes.get(idx).place + ","
+                + allQuakes.get(idx).day + "," + allQuakes.get(idx).month + "," + allQuakes.get(idx).year
+                + "," + allQuakes.get(idx).tsunami + ","
+                + allQuakes.get(idx).longitude + "," + allQuakes.get(idx).latitude+ ","
+                + allQuakes.get(idx).depth + "," + allQuakes.get(idx).title  + ");";
+
+        return query;
     }
 }
