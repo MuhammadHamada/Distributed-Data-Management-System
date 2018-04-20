@@ -104,8 +104,7 @@ public class client2 {
                 System.out.println("Going to Tablet server : " + res);
 
 
-                // TODO : hnb2a n8yr isa el localhost da lel ip lma el master  yb3t ip bdl string
-                Socket tabletServerSocket = new Socket("localhost",6789);
+                Socket tabletServerSocket = new Socket(res,6789);
                 PrintWriter tabletServerOut = new PrintWriter(tabletServerSocket.getOutputStream(), true);
                 BufferedReader tabletServerIn = new BufferedReader(new InputStreamReader(tabletServerSocket.getInputStream()));
 

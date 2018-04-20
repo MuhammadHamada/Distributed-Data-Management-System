@@ -9,6 +9,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.HashMap;
 
+import static com.company.Main.tabletServer1IP;
+import static com.company.Main.tabletServer2IP;
+
 public class requestMasterMan implements Runnable {
 
     private final Socket clientSocket;
@@ -47,7 +50,7 @@ public class requestMasterMan implements Runnable {
                     System.out.println("k.getKey() : " + k.getKey());
                     System.out.println("k.getValue() : " + k.getKey());
                     if (key >= k.getKey() && key <= k.getValue()) {
-                        tabletServer = metaData.get(k);
+                        tabletServer = (metaData.get(k).equals("tablet_server1") ? tabletServer1IP:tabletServer2IP);
                     }
 
                 }

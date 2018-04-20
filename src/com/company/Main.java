@@ -26,6 +26,13 @@ public class Main {
     private static ExecutorService threadPool = Executors.newFixedThreadPool(10);
     private static ServerSocket serverSocket;
 
+    public static String myIp = "localhost";
+    public static String myPass = "1234";
+    public static String tabletServer1IP = "localhost";
+    public static String tabletServer1Pass = "1234";
+    public static String tabletServer2IP = "localhost";
+    public static String tabletServer2Pass = "1234";
+
     private static HashMap<Pair<Double,Double>,String> metaData = new HashMap<>();
     public static ArrayList<Quak> allQuakes = new ArrayList<>();
     private static String readAll(Reader rd) throws IOException {
@@ -55,9 +62,9 @@ public class Main {
 
     public static void main(String[] args) throws IOException, JSONException {
 
-       // initMaster();
-        metaData.put(new Pair(-10.0,1.6),"tablet_server1");
-        metaData.put(new Pair(1.61,10.0),"tablet_server2");
+        //initMaster();
+        metaData.put(new Pair(-10.0,1.74),"tablet_server1");
+        metaData.put(new Pair(1.75,10.0),"tablet_server2");
 
         try {
             serverSocket = new ServerSocket(4000);
@@ -82,9 +89,9 @@ public class Main {
 
     public static void initMaster() throws IOException, JSONException {
 
-        Connection MasterConn = getConnection("master");
+        Connection MasterConn = getConnection("master",myIp,myPass);
 
-        JSONObject jsonObject = readJsonFromUrl("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&limit=54");
+        JSONObject jsonObject = readJsonFromUrl("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&limit=1100");
         JSONArray jsonArray = jsonObject.getJSONArray("features");
 
 
@@ -163,11 +170,11 @@ public class Main {
 
         int ln = allQuakes.size()/3;
 
-        metaData.put(new Pair(-100,allQuakes.get(2*ln-1).mag),"tablet_server1");
+        metaData.put(new Pair(-100.0,allQuakes.get(2*ln-1).mag),"tablet_server1");
         metaData.put(new Pair(allQuakes.get(2*ln).mag,allQuakes.get(allQuakes.size()-1).mag),"tablet_server2");
 
-        Connection tabletServer1Conn = getConnection("tablet_server1");
-        Connection tabletServer2Conn = getConnection("tablet_server2");
+        Connection tabletServer1Conn = getConnection("tablet_server1",tabletServer1IP,tabletServer1Pass);
+        Connection tabletServer2Conn = getConnection("tablet_server2",tabletServer2IP,tabletServer2Pass);
 
         for (int i =  0; i < allQuakes.size(); ++i){
 
@@ -218,13 +225,13 @@ public class Main {
 
     }
 
-    private static Connection getConnection(String databaseName){
+    private static Connection getConnection(String databaseName,String IP,String pass){
         Connection conn = null;
         try {
 
-            String url1 = "jdbc:mysql://localhost:3306/" + databaseName;
+            String url1 = "jdbc:mysql://" + IP + ":3306/" + databaseName;
             String user = "root";
-            String password = "1234";
+            String password = pass;
 
             conn = DriverManager.getConnection(url1, user, password);
             if (conn != null) {

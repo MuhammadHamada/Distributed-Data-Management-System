@@ -12,6 +12,11 @@ public class tabletServer2 {
     private static ExecutorService threadPool = Executors.newFixedThreadPool(10);
     private static ServerSocket serverSocket;
 
+    public static String myIp = "localhost";
+    public static String myPass = "1234";
+    public static String masterIP = "localhost";
+    public static String masterPass = "1234";
+
     public static void main(String[] args){
 
         try {
@@ -33,13 +38,13 @@ public class tabletServer2 {
 
     }
 
-    public static Connection getConnection(String databaseName){
+    public static Connection getConnection(String databaseName,String IP,String pass){
         Connection conn = null;
         try {
 
-            String url1 = "jdbc:mysql://localhost:3306/" + databaseName;
+            String url1 = "jdbc:mysql://" + IP + ":3306/" + databaseName;
             String user = "root";
-            String password = "1234";
+            String password = pass;
 
             conn = DriverManager.getConnection(url1, user, password);
             if (conn != null) {

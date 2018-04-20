@@ -13,6 +13,11 @@ public class tabletServer1 {
     private static ServerSocket serverSocket;
     private static double lstMagInTablet1;
 
+    public static String myIp = "localhost";
+    public static String myPass = "1234";
+    public static String masterIP = "localhost";
+    public static String masterPass = "1234";
+
     public static void main(String[] args){
 
         setMyTabletRanges();
@@ -37,7 +42,7 @@ public class tabletServer1 {
     }
 
     public static void setMyTabletRanges(){
-        Connection tabletServer1Conn = getConnection("tablet_server1");
+        Connection tabletServer1Conn = getConnection("tablet_server1",myIp,myPass);
 
         Statement mystm = null;
         String query = "SELECT max(mag) FROM EarthQuakes_1";
@@ -55,13 +60,13 @@ public class tabletServer1 {
         System.out.println("lstMagInTablet1 : " + lstMagInTablet1);
     }
 
-    public static Connection getConnection(String databaseName){
+    public static Connection getConnection(String databaseName, String IP, String pass){
         Connection conn = null;
         try {
 
-            String url1 = "jdbc:mysql://localhost:3306/" + databaseName;
+            String url1 = "jdbc:mysql://" + IP + ":3306/" + databaseName;
             String user = "root";
-            String password = "1234";
+            String password = pass;
 
             conn = DriverManager.getConnection(url1, user, password);
             if (conn != null) {

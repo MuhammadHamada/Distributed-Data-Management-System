@@ -15,6 +15,8 @@ import java.sql.Statement;
 import java.util.HashMap;
 
 import static com.company.tabletServer1.getConnection;
+import static com.company.tabletServer1.myIp;
+import static com.company.tabletServer1.myPass;
 
 public class requestTabletMan1 implements Runnable {
 
@@ -41,7 +43,7 @@ public class requestTabletMan1 implements Runnable {
 
                 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 
-                Connection tabletServer1Conn = getConnection("tablet_server1");
+                Connection tabletServer1Conn = getConnection("tablet_server1",myIp,myPass);
                 Statement mystm = null;
 
 
@@ -92,9 +94,9 @@ public class requestTabletMan1 implements Runnable {
                                 Tsunami.equals("y") || title.equals("'y'")) {
                             query = "UPDATE " + table + " SET "
                                     + (longitude.equals("y") ? " longitude = null " : " ")
-                                    + (longitude.equals("y") && (latitude.equals("y") || Tsunami.equals("y") || title.equals("y")) ? " ," : " ")
+                                    + (longitude.equals("y") && (latitude.equals("y") || Tsunami.equals("y") || title.equals("'y'")) ? " ," : " ")
                                     + (latitude.equals("y") ? " latitude = null " : " ")
-                                    + (latitude.equals("y") && (Tsunami.equals("y") || title.equals("y")) ? " ," : " ")
+                                    + (latitude.equals("y") && (Tsunami.equals("y") || title.equals("'y'")) ? " ," : " ")
                                     + (Tsunami.equals("y") ? " Tsunami = null " : " ")
                                     + (Tsunami.equals("y") && (title.equals("'y'")) ? " ," : " ")
                                     + (title.equals("'y'") ? " title = null " : " ")
@@ -103,11 +105,11 @@ public class requestTabletMan1 implements Runnable {
                                     + day + " and monthh = " + month + " and yearr = "
                                     + year + " and depth = " + depth + ";";
                         }else{
-                            System.out.println("no available data to be updated");
+                            out.println("no available data to be updated");
                             update = false;
                         }
 
-                        out.println("working on deletion (option 2) ...");
+                        System.out.println("working on deletion cells (option 2) ...");
 
                     } else {
                         System.out.println("size of title :" + title.length());
@@ -116,9 +118,9 @@ public class requestTabletMan1 implements Runnable {
                                 !Tsunami.equals("*") || !title.equals("'*'")) {
                             query = "UPDATE " + table + " SET "
                                     + (longitude.equals("*") ? " " : " longitude = " + longitude)
-                                    + (!longitude.equals("*") && (!latitude.equals("*") || !Tsunami.equals("*") || !title.equals("*")) ? " ," : " ")
+                                    + (!longitude.equals("*") && (!latitude.equals("*") || !Tsunami.equals("*") || !title.equals("'*'")) ? " ," : " ")
                                     + (latitude.equals("*") ? " " : " latitude = " + latitude)
-                                    + (!latitude.equals("*") && (!Tsunami.equals("*") || !title.equals("*")) ? " ," : " ")
+                                    + (!latitude.equals("*") && (!Tsunami.equals("*") || !title.equals("'*'")) ? " ," : " ")
                                     + (Tsunami.equals("*") ? " " : " Tsunami = " + Tsunami)
                                     + (!Tsunami.equals("*") && (!title.equals("'*'")) ? " ," : " ")
                                     + (title.equals("'*'") ? " " : " title = " + title)
@@ -144,6 +146,7 @@ public class requestTabletMan1 implements Runnable {
                             mystm.executeUpdate(query);
                             out.println("Tablet Server #1 is updated successfully");
                         } catch (SQLException e) {
+                            out.println("This row is already exists");
                             e.printStackTrace();
                         }
                     }
@@ -188,6 +191,8 @@ public class requestTabletMan1 implements Runnable {
                             + " , latitude : " + rs.getDouble(8)
                             + " , depth : " + rs.getDouble(9)
                             + " , title : " + rs.getString(10));
+                        }else{
+                            out.println(" Empty Row ...");
                         }
                     } catch (SQLException e) {
                         e.printStackTrace();
