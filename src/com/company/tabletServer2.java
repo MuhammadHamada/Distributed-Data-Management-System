@@ -12,6 +12,8 @@ public class tabletServer2 {
     private static ExecutorService threadPool = Executors.newFixedThreadPool(2);
     private static ServerSocket serverSocket;
 
+
+
     public static String myIp = "localhost";
     public static String myPass = "1234";
     public static String masterIP = "localhost";
