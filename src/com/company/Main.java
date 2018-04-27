@@ -27,11 +27,11 @@ public class Main {
     private static ServerSocket serverSocket;
 
     public static String myIp = "localhost";
-    public static String myPass = "1234";
+    public static String myPass = "johncena102010";
     public static String tabletServer1IP = "localhost";
-    public static String tabletServer1Pass = "1234";
+    public static String tabletServer1Pass = "johncena102010";
     public static String tabletServer2IP = "localhost";
-    public static String tabletServer2Pass = "1234";
+    public static String tabletServer2Pass = "johncena102010";
 
     private static HashMap<Pair<Double,Double>,String> metaData = new HashMap<>();
     public static ArrayList<Quak> allQuakes = new ArrayList<>();
@@ -62,7 +62,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, JSONException {
 
-        //initMaster();
+        initMaster();
         metaData.put(new Pair(-10.0,1.74),"tablet_server1");
         metaData.put(new Pair(1.75,10.0),"tablet_server2");
 
@@ -175,7 +175,9 @@ public class Main {
 
         Connection tabletServer1Conn = getConnection("tablet_server1",tabletServer1IP,tabletServer1Pass);
         Connection tabletServer2Conn = getConnection("tablet_server2",tabletServer2IP,tabletServer2Pass);
-
+         ArrayList<String> tabletServer1Data1 =  new ArrayList<>();
+         ArrayList<String> tabletServer1Data2 = new ArrayList<>();
+         ArrayList<String> tabletServer2Data = new ArrayList<>();
         for (int i =  0; i < allQuakes.size(); ++i){
 
             Statement mystm = null;
@@ -187,42 +189,60 @@ public class Main {
 
                 String query = generateInsertQuery("earthquakes_1",i);
                 System.out.println(query);
-                try {
+                tabletServer1Data1.add(query);
+                /*try {
                     mystm = tabletServer1Conn.createStatement();
                     mystm.executeUpdate(query);
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
+                */
 
 
             }else if(i < ln*2 || allQuakes.get(i).mag == allQuakes.get(2*ln-1).mag){
 
                 String query = generateInsertQuery("earthquakes_2",i);
                 System.out.println(query);
-
-                try {
+                tabletServer1Data2.add(query);
+                /*try {
                     mystm = tabletServer1Conn.createStatement();
                     mystm.executeUpdate(query);
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
+                */
 
             }else{
 
                 String query = generateInsertQuery("earthquakes_3",i);
                 System.out.println(query);
-
-                try {
+                tabletServer2Data.add(query);
+               /* try {
                     mystm = tabletServer2Conn.createStatement();
                     mystm.executeUpdate(query);
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
+                */
 
             }
 
         }
 
+
+        //hereeeeee
+        // sending data to tablet 1
+        System.out.println("sending data to tableeeeeeeeeeet");
+        ArrayList<ArrayList<String>> data1= new ArrayList<>();
+        data1.add(tabletServer1Data1); data1.add(tabletServer1Data2);
+        Socket echoSocket = new Socket("localhost", 6789);
+        ObjectOutputStream out = new ObjectOutputStream(echoSocket.getOutputStream());
+        out.writeObject(data1);
+        //sending data to tablet 2
+        Socket echoSocket2 = new Socket("localhost", 6788);
+        ObjectOutputStream out2 = new ObjectOutputStream(echoSocket2.getOutputStream());
+        out2.writeObject(tabletServer2Data);
+         System.out.println("el master b3t 5alas");
     }
 
     private static Connection getConnection(String databaseName,String IP,String pass){
