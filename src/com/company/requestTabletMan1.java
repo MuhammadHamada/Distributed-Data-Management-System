@@ -35,8 +35,7 @@ public class requestTabletMan1 implements Runnable {
 
             try {
 
-                System.out.println("socket : " + clientSocket);
-                System.out.println("lstMagInTablet1 : " + lstMagInTablet1);
+
 
                 BufferedReader in = new BufferedReader(
                         new InputStreamReader(clientSocket.getInputStream()));
@@ -48,16 +47,25 @@ public class requestTabletMan1 implements Runnable {
                 String[] arr = msg.split("!");
                 String option = arr[0];
 
+
+                if(option.equals("s") || option.equals("dc") || option.equals("dr")){
+                    synchronized (object){
+                        executeQuery(msg);
+                    }
+                }else{
+                    executeQuery(msg);
+                }
                 if(!option.equals("r")){
                     period--;
                     System.out.println("period: "+period);
                     if(period == 0){
-                        System.out.println("d5lt gwaaaaaaaaaa el period b zeroooooooooooooo");
+                        System.out.println("d5lt gwaaaaaaaaaa el period b zeroooooooooooooo tablet1");
                         period = MAX_Q;
                         Socket echoSocket = new Socket("localhost", 4000);
+                        System.out.println("string to be sent to update: "+updateQueries.toString());
                         PrintWriter out = new PrintWriter(echoSocket.getOutputStream(), true);
-                        BufferedReader inn = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
                         out.println(updateQueries.toString());
+                        out.flush();
                         updateQueries.setLength(0);
                         updateQueries.append("update");
                         /*Connection masterConn = getConnection("master",masterIP,masterPass);
@@ -74,17 +82,11 @@ public class requestTabletMan1 implements Runnable {
                         */
                     }
                 }
-                if(option.equals("s") || option.equals("dc") || option.equals("dr")){
-                    synchronized (object){
-                        executeQuery(msg);
-                    }
-                }else{
-                    executeQuery(msg);
-                }
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
 
 
     }

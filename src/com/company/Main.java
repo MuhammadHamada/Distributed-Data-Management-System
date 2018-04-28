@@ -45,47 +45,49 @@ public class Main {
     }
 
     public static JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
-        System.out.println("heloooooo");
+
         InputStream is = new URL(url).openStream();
         try {
             BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
             String jsonText = readAll(rd);
-            System.out.println("hel222222222");
+
             JSONObject json = new JSONObject(jsonText);
-            System.out.println("hel3333333333");
+
             return json;
         } finally {
-            System.out.println("hel4444444444");
+
             is.close();
         }
     }
 
     public static void main(String[] args) throws IOException, JSONException {
-
+         System.out.println("Master Started");
         initMaster();
         metaData.put(new Pair(-10.0,1.74),"tablet_server1");
         metaData.put(new Pair(1.75,10.0),"tablet_server2");
 
         try {
             serverSocket = new ServerSocket(4000);
-            System.out.println("Create serverSocket at port 4000");
+            System.out.println("Create Master serverSocket at port 4000");
 
             while (true){
 
                 Socket socket = serverSocket.accept();
-                PrintWriter tabletServerOut = new PrintWriter(socket.getOutputStream(), true);
+                System.out.println("another socket");
                 BufferedReader tabletServerIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 String res = tabletServerIn.readLine();
                 if(!(res.charAt(0)=='u')) {
-                    System.out.println("da client");
+
+                    System.out.println("Request from Client");
 
                     threadPool.execute(new requestMasterMan(socket, metaData,res));
 
                 }
                 else {
-                    System.out.println("da tablet");
-                    threadPool.execute(new updateMasterMan(socket));
+                    System.out.println("Request from Tablet");
+                    threadPool.execute(new updateMasterMan(socket,res));
                 }
+
             }
 
         } catch (IOException e) {
@@ -247,21 +249,25 @@ public class Main {
         }
 
 
-        //hereeeeee
+
         // sending data to tablet 1
-        System.out.println("sending data to tableeeeeeeeeeet");
+        System.out.println("sending data to tablet 1 from master");
 
 
         Socket echoSocket = new Socket("localhost", 6789);
         PrintWriter out = new PrintWriter(echoSocket.getOutputStream(), true);
-        BufferedReader in = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
         out.println(tabletServer1Data1.toString()+"%"+tabletServer1Data2.toString());
+        out.flush();
+        System.out.println("the master sent the data to tablet 1");
+        //echoSocket.close();
         //sending data to tablet 2
+        System.out.println("sending data to tablet 2 from master");
         Socket echoSocket2 = new Socket("localhost", 6788);
         PrintWriter out2 = new PrintWriter(echoSocket2.getOutputStream(), true);
-        BufferedReader in2 = new BufferedReader(new InputStreamReader(echoSocket2.getInputStream()));
         out2.println(tabletServer2Data.toString());
-        System.out.println("el master b3t 5alas");
+        out2.flush();
+        System.out.println("the master sent the data to tablet 2");
+        //echoSocket2.close();
     }
 
     private static Connection getConnection(String databaseName,String IP,String pass){

@@ -16,9 +16,7 @@ public class client1 {
 
 
             while (true) {
-                Socket socket = new Socket("localhost",4000);
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
 
                 System.out.println("PLease Choose from the following options : ");
                 System.out.println("[1] --> Set Row");
@@ -97,7 +95,10 @@ public class client1 {
                 }else{
                     break;
                 }
-                System.out.println("msg : " + msg);
+                Socket socket = new Socket("localhost",4000);
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                System.out.println("msg from client1 : " + msg);
                 out.println(msg);
                // out.close();
 
@@ -113,9 +114,9 @@ public class client1 {
                 res = tabletServerIn.readLine();
 
                 System.out.println(res);
-                tabletServerSocket.close();
+                //tabletServerSocket.close();
 
-                socket.close();
+                //socket.close();
 
             }
 

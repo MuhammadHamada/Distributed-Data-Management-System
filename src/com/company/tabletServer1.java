@@ -26,14 +26,14 @@ public class tabletServer1 {
 
         try {
             serverSocket = new ServerSocket(6789);
-            System.out.println("h-receive ahooho tablet 1 ");
+            System.out.println("Talbet 1 is waiting for the data from the Master");
             Statement mystm = null;
             Connection tabletServer1Conn = getConnection("tablet_server1",myIp,myPass);
             Socket datasocket = serverSocket.accept();
-            System.out.println("est2blt el dataaaaaaaaaaaa tablet 1");
-            BufferedReader tabletServerIn = new BufferedReader(new InputStreamReader(datasocket.getInputStream()));
 
+            BufferedReader tabletServerIn = new BufferedReader(new InputStreamReader(datasocket.getInputStream()));
             String res = tabletServerIn.readLine();
+            System.out.println("the data is hereee");
                 String [] temp = res.split("%");
                 String [] arr1 = temp[0].split("!");
                 String [] arr2 = temp[1].split("!");
@@ -55,16 +55,15 @@ public class tabletServer1 {
                 }
 
             }
+             // datasocket.close();
 
-
-                 System.out.println("tablet 1 finished");
+            System.out.println("tablet 1 finished inserting the data into it's database");
             while (true){
 
                 Socket socket = serverSocket.accept();
 
-                System.out.println("2bl socket");
                 threadPool.execute(new requestTabletMan1(socket,lstMagInTablet1));
-                System.out.println("b3d socket");
+                //socket.close();
 
             }
 

@@ -18,19 +18,20 @@ import static com.company.tabletServer1.masterPass;
 public class updateMasterMan implements Runnable {
 
     private final Socket tabletSocket;
-
-    public updateMasterMan(Socket tabletSocket) {
+    private final String res;
+    public updateMasterMan(Socket tabletSocket,String res) {
         this.tabletSocket = tabletSocket;
+        this.res= res;
     }
     @Override
     public void run() {
         ObjectInputStream in = null;
-        try {
-            System.out.println("updating");
-            System.out.println("est2blt el dataaaaaaaaaaaa tablet 1");
-            BufferedReader tabletServerIn = new BufferedReader(new InputStreamReader(tabletSocket.getInputStream()));
 
-            String res = tabletServerIn.readLine();
+            System.out.println("I'm in updateMasterMan now ");
+
+            //BufferedReader tabletServerIn = new BufferedReader(new InputStreamReader(tabletSocket.getInputStream()));
+            //String res = tabletServerIn.readLine();
+            System.out.println("the data to be updated is hereeee");
             String [] arr =res.split("!");
             Connection masterConn = getConnection("master",masterIP,masterPass);
             Statement mystm = null;
@@ -42,9 +43,10 @@ public class updateMasterMan implements Runnable {
                     e.printStackTrace();
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            System.out.println("the update is finished");
+
+
+
 
 
     }
