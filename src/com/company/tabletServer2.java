@@ -1,6 +1,8 @@
 package com.company;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -11,7 +13,7 @@ import java.util.concurrent.Executors;
 
 public class tabletServer2 {
 
-    private static ExecutorService threadPool = Executors.newFixedThreadPool(2);
+    private static ExecutorService threadPool = Executors.newFixedThreadPool(10);
     private static ServerSocket serverSocket;
 
 
@@ -30,15 +32,18 @@ public class tabletServer2 {
             Connection tabletServer1Conn = getConnection("tablet_server2",myIp,myPass);
             Socket datasocket = serverSocket.accept();
             System.out.println("est2blt el dataaaaaaaaaaaa tablet 2 ");
-            ObjectInputStream in = new ObjectInputStream(datasocket.getInputStream());
 
-                ArrayList<String> data1=( ArrayList<String>)in.readObject();
-                for(int i=0;i<data1.size();++i){
+            BufferedReader tabletServerIn = new BufferedReader(new InputStreamReader(datasocket.getInputStream()));
+
+            String res = tabletServerIn.readLine();
+              String [] arr= res.split("!");
+
+                for(int i=1;i<arr.length;++i){
                     try {
 
                         mystm = tabletServer1Conn.createStatement();
-                        mystm.executeUpdate(data1.get(i));
-                        System.out.println("query: " + data1.get(i) + " is inserted in tablet 2");
+                        mystm.executeUpdate(arr[i]);
+
                     }
                     catch (SQLException e) {
                         e.printStackTrace();
@@ -58,9 +63,10 @@ public class tabletServer2 {
 
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } /*catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+        */
 
     }
 

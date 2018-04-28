@@ -12,10 +12,10 @@ public class client2 {
     public static void main(String[] args){
 
         try {
-            Socket socket = new Socket("localhost",4000);
+           // Socket socket = new Socket("localhost",4000);
 
             while (true) {
-
+                Socket socket = new Socket("localhost",4000);
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
@@ -114,11 +114,11 @@ public class client2 {
                 System.out.println(res);
                 tabletServerSocket.close();
 
-
+                socket.close();
 
             }
 
-            socket.close();
+            //socket.close();
 
         } catch (IOException e) {
             e.printStackTrace();

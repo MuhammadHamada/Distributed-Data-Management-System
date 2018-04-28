@@ -15,27 +15,30 @@ import static com.company.Main.tabletServer2IP;
 public class requestMasterMan implements Runnable {
 
     private final Socket clientSocket;
+    private final String msg;
     public static HashMap<Pair<Double,Double>,String> metaData = new HashMap<>();
 
-    public requestMasterMan(Socket clientSocket, HashMap<Pair<Double,Double>,String> mD) {
+    public requestMasterMan(Socket clientSocket, HashMap<Pair<Double,Double>,String> mD,String msg) {
         this.clientSocket = clientSocket;
         this.metaData = mD;
+        this.msg=msg;
     }
 
     @Override
     public void run() {
 
-        while (true) {
+
             try {
 
-
+                 System.out.println("ana fe request master man");
                // System.out.println("socket : " + clientSocket);
 
 
-                BufferedReader in = new BufferedReader(
+              /*  BufferedReader in = new BufferedReader(
                         new InputStreamReader(clientSocket.getInputStream()));
 
                 String msg = in.readLine();
+                */
                 System.out.println("msg = " + msg);
 
                 //String msg = "s!usc000mqnr!4.0!44km NW of Naisano Dua, Indonesia!2014-01-01!0";
@@ -64,7 +67,7 @@ public class requestMasterMan implements Runnable {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
+       System.out.println("5rgt mn request master man");
 
     }
 }

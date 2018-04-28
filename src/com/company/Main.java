@@ -23,7 +23,7 @@ import static java.util.Comparator.comparingDouble;
 
 public class Main {
 
-    private static ExecutorService threadPool = Executors.newFixedThreadPool(2);
+    private static ExecutorService threadPool = Executors.newFixedThreadPool(10);
     private static ServerSocket serverSocket;
 
     public static String myIp = "localhost";
@@ -73,11 +73,19 @@ public class Main {
             while (true){
 
                 Socket socket = serverSocket.accept();
+                PrintWriter tabletServerOut = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader tabletServerIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                String res = tabletServerIn.readLine();
+                if(!(res.charAt(0)=='u')) {
+                    System.out.println("da client");
 
-                System.out.println("2bl socket");
-                threadPool.execute(new requestMasterMan(socket,metaData));
-                System.out.println("b3d socket");
+                    threadPool.execute(new requestMasterMan(socket, metaData,res));
 
+                }
+                else {
+                    System.out.println("da tablet");
+                    threadPool.execute(new updateMasterMan(socket));
+                }
             }
 
         } catch (IOException e) {
@@ -175,9 +183,15 @@ public class Main {
 
         Connection tabletServer1Conn = getConnection("tablet_server1",tabletServer1IP,tabletServer1Pass);
         Connection tabletServer2Conn = getConnection("tablet_server2",tabletServer2IP,tabletServer2Pass);
-         ArrayList<String> tabletServer1Data1 =  new ArrayList<>();
-         ArrayList<String> tabletServer1Data2 = new ArrayList<>();
-         ArrayList<String> tabletServer2Data = new ArrayList<>();
+        // ArrayList<String> tabletServer1Data1 =  new ArrayList<>();
+        // ArrayList<String> tabletServer1Data2 = new ArrayList<>();
+        // ArrayList<String> tabletServer2Data = new ArrayList<>();
+         StringBuilder tabletServer1Data1 = new StringBuilder("");
+        StringBuilder tabletServer1Data2 = new StringBuilder("");
+        StringBuilder tabletServer2Data = new StringBuilder("");
+        tabletServer1Data1.append("w");
+        tabletServer1Data2.append("w");
+        tabletServer2Data.append("w");
         for (int i =  0; i < allQuakes.size(); ++i){
 
             Statement mystm = null;
@@ -189,7 +203,8 @@ public class Main {
 
                 String query = generateInsertQuery("earthquakes_1",i);
                 System.out.println(query);
-                tabletServer1Data1.add(query);
+                tabletServer1Data1.append("!");
+                tabletServer1Data1.append(query);
                 /*try {
                     mystm = tabletServer1Conn.createStatement();
                     mystm.executeUpdate(query);
@@ -203,7 +218,8 @@ public class Main {
 
                 String query = generateInsertQuery("earthquakes_2",i);
                 System.out.println(query);
-                tabletServer1Data2.add(query);
+                tabletServer1Data2.append("!");
+                tabletServer1Data2.append(query);
                 /*try {
                     mystm = tabletServer1Conn.createStatement();
                     mystm.executeUpdate(query);
@@ -216,7 +232,8 @@ public class Main {
 
                 String query = generateInsertQuery("earthquakes_3",i);
                 System.out.println(query);
-                tabletServer2Data.add(query);
+                tabletServer2Data.append("!");
+                tabletServer2Data.append(query);
                /* try {
                     mystm = tabletServer2Conn.createStatement();
                     mystm.executeUpdate(query);
@@ -233,16 +250,18 @@ public class Main {
         //hereeeeee
         // sending data to tablet 1
         System.out.println("sending data to tableeeeeeeeeeet");
-        ArrayList<ArrayList<String>> data1= new ArrayList<>();
-        data1.add(tabletServer1Data1); data1.add(tabletServer1Data2);
+
+
         Socket echoSocket = new Socket("localhost", 6789);
-        ObjectOutputStream out = new ObjectOutputStream(echoSocket.getOutputStream());
-        out.writeObject(data1);
+        PrintWriter out = new PrintWriter(echoSocket.getOutputStream(), true);
+        BufferedReader in = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
+        out.println(tabletServer1Data1.toString()+"%"+tabletServer1Data2.toString());
         //sending data to tablet 2
         Socket echoSocket2 = new Socket("localhost", 6788);
-        ObjectOutputStream out2 = new ObjectOutputStream(echoSocket2.getOutputStream());
-        out2.writeObject(tabletServer2Data);
-         System.out.println("el master b3t 5alas");
+        PrintWriter out2 = new PrintWriter(echoSocket2.getOutputStream(), true);
+        BufferedReader in2 = new BufferedReader(new InputStreamReader(echoSocket2.getInputStream()));
+        out2.println(tabletServer2Data.toString());
+        System.out.println("el master b3t 5alas");
     }
 
     private static Connection getConnection(String databaseName,String IP,String pass){

@@ -3,10 +3,7 @@ package com.company;
 
 import javafx.util.Pair;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -22,8 +19,8 @@ public class requestTabletMan2 implements Runnable {
     private final Socket clientSocket;
     private static Object object = new Object();
     private static int period = MAX_Q;
-    private static ArrayList<String> allQueries = new ArrayList<>();
-
+    //private static ArrayList<String> allQueries = new ArrayList<>();
+    private static StringBuilder updateQueries = new StringBuilder("");
     public requestTabletMan2(Socket clientSocket) {
         this.clientSocket = clientSocket;
     }
@@ -31,7 +28,7 @@ public class requestTabletMan2 implements Runnable {
     @Override
     public void run() {
 
-        while (true) {
+
             try {
 
                 System.out.println("socket : " + clientSocket);
@@ -49,17 +46,12 @@ public class requestTabletMan2 implements Runnable {
                     period--;
                     if(period == 0){
                         period = MAX_Q;
-                        Connection masterConn = getConnection("master",masterIP,masterPass);
-                        Statement mystm = null;
-                        for (int i = 0; i < period; ++i){
-                            try {
-                                mystm = masterConn.createStatement();
-                                mystm.executeUpdate(allQueries.get(i));
-                                allQueries.add(allQueries.get(i));
-                            } catch (SQLException e) {
-                                e.printStackTrace();
-                            }
-                        }
+                        Socket echoSocket = new Socket("localhost", 4000);
+                        PrintWriter out = new PrintWriter(echoSocket.getOutputStream(), true);
+                        BufferedReader inn = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
+                        out.println(updateQueries.toString());
+                        updateQueries.setLength(0);
+                        updateQueries.append("update");
                     }
                 }
                 if(option.equals("s") || option.equals("dc") || option.equals("dr")){
@@ -75,7 +67,7 @@ public class requestTabletMan2 implements Runnable {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
+
 
     }
 
@@ -123,8 +115,9 @@ public class requestTabletMan2 implements Runnable {
                         + (latitude.equals("*") ? "null" : latitude) + ","
                         + depth + "," + (title.equals("'*'") ? "null" : title) + ");";
                 query = "insert into " + table + tmp;
-                allQueries.add("insert into EarthQuakes " + tmp);
-
+                //allQueries.add("insert into EarthQuakes " + tmp);
+                updateQueries.append("!");
+                updateQueries.append("insert into EarthQuakes " + tmp);
                 System.out.println("working on adding (option 4) ...");
 
 
@@ -149,7 +142,9 @@ public class requestTabletMan2 implements Runnable {
                             + day + " and monthh = " + month + " and yearr = "
                             + year + " and depth = " + depth + ";";
                     query = "UPDATE " + table + tmp;
-                    allQueries.add("UPDATE master " + tmp);
+                    //allQueries.add("UPDATE master " + tmp);
+                    updateQueries.append("!");
+                    updateQueries.append("UPDATE EarthQuakes " + tmp);
                 }else{
                     out.println("no available data to be updated");
                     update = false;
@@ -175,8 +170,9 @@ public class requestTabletMan2 implements Runnable {
                             + day + " and monthh = " + month + " and yearr = "
                             + year + " and depth = " + depth + ";";
                     query = "UPDATE " + table + tmp;
-                    allQueries.add("UPDATE EarthQuakes " + tmp);
-
+                    //allQueries.add("UPDATE EarthQuakes " + tmp);
+                    updateQueries.append("!");
+                    updateQueries.append("UPDATE EarthQuakes " + tmp);
                 }else{
                     out.println("no available data to be updated");
                     update = false;
@@ -206,12 +202,14 @@ public class requestTabletMan2 implements Runnable {
                     + day + " and monthh = " + month + " and yearr = "
                     + year + " and depth = " + depth;
             query = "delete from " + table + tmp;
-            allQueries.add("delete from EarthQuakes " + tmp);
+            //allQueries.add("delete from EarthQuakes " + tmp);
+            updateQueries.append("!");
+            updateQueries.append("delete from EarthQuakes " + tmp);
             System.out.println("working on deletion (option 3) ...");
             try {
                 mystm = tabletServer2Conn.createStatement();
                 mystm.executeUpdate(query);
-                allQueries.add(query);
+                //allQueries.add(query);
                 out.println("Tablet Server #1 is updated successfully");
             } catch (SQLException e) {
                 e.printStackTrace();
